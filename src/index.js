@@ -2,11 +2,11 @@ const dgram = require('dgram')
 const os = require('os')
 const events = require('events')
 
-const {MULTICAST_ADDRESS, DISCOVERY_PORT, SERVER_PORT} = require('./constants')
+const { MULTICAST_ADDRESS, DISCOVERY_PORT, SERVER_PORT } = require('./constants')
 const Gateway = require('./lib/gateway')
 
 class Aqara extends events.EventEmitter {
-  constructor () {
+  constructor() {
     super()
 
     this._gateways = new Map()
@@ -14,15 +14,19 @@ class Aqara extends events.EventEmitter {
     this._serverSocket = dgram.createSocket('udp4')
     this._serverSocket.on('listening', () => {
       const networkIfaces = os.networkInterfaces()
+
       for (const ifaceName in networkIfaces) {
         const networkIface = networkIfaces[ifaceName]
 
         for (const connection of networkIface) {
-          if (connection.family === 'IPv4') {
+          if (connection.family === 'IPv4' && ifaceName === 'eth0') {
+            console.log("Binding to: " + ifaceName)
             this._serverSocket.addMembership(MULTICAST_ADDRESS, connection.address)
           }
         }
       }
+
+      // this._serverSocket.addMembership(MULTICAST_ADDRESS, "192.168.1.84")
 
       this._triggerWhois()
     })
@@ -32,12 +36,12 @@ class Aqara extends events.EventEmitter {
     this._serverSocket.bind(SERVER_PORT, '0.0.0.0')
   }
 
-  _triggerWhois () {
+  _triggerWhois() {
     const payload = '{"cmd": "whois"}'
     this._serverSocket.send(payload, 0, payload.length, DISCOVERY_PORT, MULTICAST_ADDRESS)
   }
 
-  _handleMessage (msg) {
+  _handleMessage(msg) {
     const parsed = JSON.parse(msg.toString())
 
     let handled = false
