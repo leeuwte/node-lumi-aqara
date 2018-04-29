@@ -169,6 +169,28 @@ class Gateway extends events.EventEmitter {
     this._sendData(data)
   }
 
+  _stopringtone() {
+    var data = {};
+    data.mid = 10000
+
+    this._sendData(data)
+  }
+
+  _addDevice() {
+
+    var data = {};
+    data.join_permission = "yes"
+
+    this._sendData(data)
+  }
+
+  _removeDevice(device_id) {
+    var data = {};
+    data.remove_device = device_id
+    this._sendData(data)
+
+  }
+
   _sendData(jsonData) {
 
     jsonData.key = this._key
@@ -207,9 +229,24 @@ class Gateway extends events.EventEmitter {
 
   playRingtone(ringtone, volume) {
     if (!this._ready) return
-
-    this._playringtone(ringtone, volume);
+    this._playringtone(ringtone, volume)
   }
+
+  stopRingtone() {
+    if (!this._ready) return
+    this._stopringtone()
+  }
+
+  addDevice() {
+    if (!this._ready) return
+    this._addDevice()
+  }
+
+  remodeDevice() {
+    if (!this._ready) return
+    this._removeDevice()
+  }
+  
 }
 
 module.exports = Gateway
